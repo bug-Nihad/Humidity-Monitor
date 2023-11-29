@@ -10,8 +10,8 @@ char auth[] = BLYNK_AUTH_TOKEN;
 #include <DHT.h>
 #include <DHT_U.h>
 
-const char *ssid = "Akifa-wifi";       // Akifa-wifi
-const char *pass = "akifa123"; // akifa123
+const char *ssid = "Akifa-wifi"; // Akifa-wifi
+const char *pass = "akifa123";   // akifa123
 boolean temp = true;
 
 #define DHTPIN 4      // Pin where the DHT11 is connected
@@ -19,10 +19,43 @@ boolean temp = true;
 DHT dht(DHTPIN, DHTTYPE);
 
 const int mist_switch = 16;
+int sw_value = 60;
 
 BLYNK_CONNECTED()
 {
   Blynk.syncVirtual(V2);
+}
+void mist_on()
+{
+  digitalWrite(mist_switch, LOW);
+  delay(500);
+  digitalWrite(mist_switch, HIGH);
+  Serial.println("Mist is On.");
+  temp = false;
+  // Blynk.setProperty(V3, "color", "#23C48E");
+  // Blynk.virtualWrite(V3, 255);
+}
+
+void mist_off()
+{
+  digitalWrite(mist_switch, LOW);
+  delay(500);
+  digitalWrite(mist_switch, HIGH);
+  delay(1000);
+  digitalWrite(mist_switch, LOW);
+  delay(500);
+  digitalWrite(mist_switch, HIGH);
+  temp = true;
+  Serial.println("Mist is off.");
+  // Blynk.setProperty(V3, "color", "#D3435C");
+  // Blynk.virtualWrite(V3, 255);
+}
+
+BLYNK_WRITE(V2)
+{
+  sw_value = param.asInt();
+  Serial.print("Button value is: ");
+  Serial.println(sw_value);
 }
 
 void setup()
@@ -34,7 +67,6 @@ void setup()
   pinMode(DHTPIN, INPUT);
   pinMode(mist_switch, OUTPUT);
   digitalWrite(mist_switch, HIGH);
-  
 
   // Connect to Wi-Fi
   Serial.println();
@@ -51,6 +83,7 @@ void loop()
 {
 
   Blynk.run();
+  Serial.print("Blynk Connected: ");
   Serial.println(Blynk.connected());
   float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
@@ -64,28 +97,29 @@ void loop()
   Serial.println(humidity);
   Serial.println(temperature);
 
-
-// Conditions for Humidifier
-  if (humidity<= 78 && temp == true){
-    digitalWrite(mist_switch, LOW);
-    delay(500);
-    digitalWrite(mist_switch, HIGH);
-    Serial.println("On");
-    temp = false;
+  // Conditions for Humidifier
+  if (humidity <= sw_value && temp == true)
+  {
+    mist_on();
   }
-  else if(humidity>78 && temp == false){
-    digitalWrite(mist_switch, LOW);
-    delay(500);
-    digitalWrite(mist_switch, HIGH);
-    delay(1000);
-    digitalWrite(mist_switch, LOW);
-    delay(500);
-    digitalWrite(mist_switch, HIGH);
-    temp = true;
-    Serial.println("off");
+  else if (humidity > sw_value && temp == false)
+  {
+    mist_off();
   }
 
-// Updating the values
+  // Updating the values
   Blynk.virtualWrite(V0, humidity);
   Blynk.virtualWrite(V1, temperature);
+  if (temp == false) // Mist is on
+  {
+    Blynk.setProperty(V3, "color", "#23C48E"); // Green
+    Blynk.virtualWrite(V3, 200);
+  }
+  else if (temp == true)  //Mist is off
+  {
+    Blynk.setProperty(V3, "color", "#D3435C");  //Red
+    Blynk.virtualWrite(V3, 200);
+  }
+
+  delay(500);
 }
