@@ -70,7 +70,6 @@ void loop()
     digitalWrite(mist_switch, LOW);
     delay(500);
     digitalWrite(mist_switch, HIGH);
-    delay(100);
     Serial.println("On");
     temp = false;
   }
@@ -89,5 +88,4 @@ void loop()
 // Updating the values
   Blynk.virtualWrite(V0, humidity);
   Blynk.virtualWrite(V1, temperature);
-  delay(500);
 }
