@@ -10,8 +10,8 @@ char auth[] = BLYNK_AUTH_TOKEN;
 #include <DHT.h>
 #include <DHT_U.h>
 
-const char *ssid = "Akifa-wifi"; // Akifa-wifi
-const char *pass = "akifa123";   // akifa123
+const char *ssid = "Cartoon"; 
+const char *pass = "12345678";   
 boolean temp = true;
 
 #define DHTPIN 4      // Pin where the DHT11 is connected
@@ -19,7 +19,7 @@ boolean temp = true;
 DHT dht(DHTPIN, DHTTYPE);
 
 const int mist_switch = 16;
-int sw_value = 60;
+int sw_value = 0;
 
 BLYNK_CONNECTED()
 {
@@ -81,12 +81,12 @@ void setup()
 
 void loop()
 {
-
   Blynk.run();
-  Serial.print("Blynk Connected: ");
-  Serial.println(Blynk.connected());
   float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
+  Serial.print("Blynk Connected: ");
+  Serial.println(Blynk.connected());
+
 
   // Check if any reads failed and exit early (to try again).
   if (isnan(humidity) || isnan(temperature))
@@ -94,8 +94,6 @@ void loop()
     Serial.println("Failed to read from DHT sensor!");
     return;
   }
-  Serial.println(humidity);
-  Serial.println(temperature);
 
   // Conditions for Humidifier
   if (humidity <= sw_value && temp == true)
@@ -122,4 +120,6 @@ void loop()
   }
 
   delay(500);
+
+
 }
